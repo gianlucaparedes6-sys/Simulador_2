@@ -41,8 +41,7 @@ function guardarCliente(){
   let clienteExistente = buscarCliente(cedula);
 
   if(clienteExistente == null){
-    // ✔ NO existe → crear nuevo
-    let cliente = {
+      let cliente = {
       cedula: cedula,
       nombre: nombre,
       apellido: apellido,
@@ -53,18 +52,15 @@ function guardarCliente(){
     clientes.push(cliente);
 
   }else{
-    // ✔ SI existe → actualizar (menos cédula)
+   
     clienteExistente.nombre = nombre;
     clienteExistente.apellido = apellido;
     clienteExistente.ingresos = ingresos;
     clienteExistente.egresos = egresos;
   }
 
-  // Pintar tabla siempre
   pintarClientes();
-
-  // Limpiar selección
-  clienteSeleccionado = null;
+   clienteSeleccionado = null;
 }
 function pintarClientes(){
   let contenido = "";
@@ -78,7 +74,7 @@ function pintarClientes(){
     contenido += "<td>" + cliente.apellido + "</td>";
     contenido += "<td>" + cliente.ingresos + "</td>";
     contenido += "<td>" + cliente.egresos + "</td>";
-contenido += '<td><button onclick="seleccionarCliente(\'' + cliente.cedula + '\')">Actualizar</button></td>';  }
+    contenido += '<td><button onclick="seleccionarCliente(\'' + cliente.cedula + '\')">Actualizar</button></td>';  }
 
   document.getElementById("tablaClientes").innerHTML = contenido;
 }
@@ -111,11 +107,11 @@ function seleccionarCliente(cedula){
     }
 }
 function limpiar(){
-  mostrarTextoEnCaja("cedula", "");
-  mostrarTextoEnCaja("nombre", "");
-  mostrarTextoEnCaja("apellido", "");
-  mostrarTextoEnCaja("ingresos", "");
-  mostrarTextoEnCaja("egresos", "");
+  mostrarTextoEnCaja("txtcedula", "");
+  mostrarTextoEnCaja("txtnombre", "");
+  mostrarTextoEnCaja("txtapellido", "");
+  mostrarTextoEnCaja("txtingresos", "");
+  mostrarTextoEnCaja("txtegresos", "");
 
   clienteSeleccionado = null;
 }

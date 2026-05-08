@@ -23,7 +23,10 @@ function mostrarSeccion(id){
 function guardarTasa(){
   let valor = recuperarTexto("tasaInteres");
   let tasa = parseFloat(valor);
+
   if(tasa >= 10 && tasa <= 20){
+    tasaInteres = tasa; // 
+
     mostrarTexto("mensajeTasa", "Tasa configurada correctamente: " + tasa + "%");
   }else{
     mostrarTexto("mensajeTasa", "La tasa debe estar entre 10% y 20%");
@@ -37,11 +40,8 @@ function guardarCliente(){
   let ingresos = recuperarFloat("txtingresos");
   let egresos = recuperarFloat("txtegresos");
 
-  // Buscar si ya existe
-  let clienteExistente = buscarCliente(cedula);
-
-  if(clienteExistente == null){
-      let cliente = {
+  if(clienteSeleccionado == null){
+    let cliente = {
       cedula: cedula,
       nombre: nombre,
       apellido: apellido,
@@ -51,16 +51,15 @@ function guardarCliente(){
 
     clientes.push(cliente);
 
-  }else{
-   
-    clienteExistente.nombre = nombre;
-    clienteExistente.apellido = apellido;
-    clienteExistente.ingresos = ingresos;
-    clienteExistente.egresos = egresos;
+  } else {
+    clienteSeleccionado.nombre = nombre;
+    clienteSeleccionado.apellido = apellido;
+    clienteSeleccionado.ingresos = ingresos;
+    clienteSeleccionado.egresos = egresos;
   }
 
   pintarClientes();
-   clienteSeleccionado = null;
+  limpiar();
 }
 function pintarClientes(){
   let contenido = "";
@@ -74,7 +73,14 @@ function pintarClientes(){
     contenido += "<td>" + cliente.apellido + "</td>";
     contenido += "<td>" + cliente.ingresos + "</td>";
     contenido += "<td>" + cliente.egresos + "</td>";
-    contenido += '<td><button onclick="seleccionarCliente(\'' + cliente.cedula + '\')">Actualizar</button></td>';  }
+
+    contenido += "<td>";
+    contenido += '<button onclick="seleccionarCliente(\'' + cliente.cedula + '\')">Actualizar</button>';
+    contenido += '<button onclick="eliminarCliente(\'' + cliente.cedula + '\')">Eliminar</button>';
+    contenido += "</td>";
+
+    contenido += "</tr>";
+  }
 
   document.getElementById("tablaClientes").innerHTML = contenido;
 }
@@ -91,12 +97,22 @@ function buscarCliente(cedula) {
     }
     return clienteEncontrado ;
 }
+function eliminarCliente(cedula){
+  for(let i = 0; i < clientes.length; i++){
+    if(clientes[i].cedula == cedula){
+      clientes.splice(i,1);
+      break;
+    }
+  }
+
+  pintarClientes();
+}
 function seleccionarCliente(cedula){
-  let valorCedula = recuperarTexto("txtcedula");
-    let cliente = buscarCliente(valorCedula);
+let cliente = buscarCliente(cedula);
     if (cliente == null) {
         alert("Cliente no encontrado");
     } else {
+      clienteSeleccionado = cliente;
       alert("Cliente seleccionado: " + cliente.nombre);
         mostrarTextoEnCaja("txtcedula", cliente.cedula);
         mostrarTextoEnCaja("txtnombre", cliente.nombre);
@@ -106,6 +122,7 @@ function seleccionarCliente(cedula){
 
     }
 }
+
 function limpiar(){
   mostrarTextoEnCaja("txtcedula", "");
   mostrarTextoEnCaja("txtnombre", "");
@@ -114,4 +131,115 @@ function limpiar(){
   mostrarTextoEnCaja("txtegresos", "");
 
   clienteSeleccionado = null;
+}
+
+let clienteCredito = null;
+
+function buscarClienteCredito(){
+  let cedula = recuperarTexto("buscarCedulaCredito");
+
+  if(cedula == ""){
+    mostrarTexto("datosClienteCredito", "Ingrese una cédula");
+    return;
+  }
+
+  let cliente = buscarCliente(cedula);
+
+  if(cliente == null){
+    mostrarTexto("datosClienteCredito", "Cliente no encontrado");
+    clienteCredito = null;
+  } else {
+    clienteCredito = cliente;
+
+    let info = `
+  <h3>Datos del Cliente</h3>
+  <p><strong>Cédula:</strong> ${cliente.cedula}</p>
+  <p><strong>Nombre:</strong> ${cliente.nombre}</p>
+  <p><strong>Apellido:</strong> ${cliente.apellido}</p>
+  <p><strong>Ingresos:</strong> ${cliente.ingresos}</p>
+  <p><strong>Egresos:</strong> ${cliente.egresos}</p>
+`;
+
+document.getElementById("datosClienteCredito").innerHTML = info;
+  }
+}
+
+function calcularCredito(){
+
+  if(clienteCredito == null){
+    mostrarTexto("resultadoCredito", "Primero busque un cliente");
+    return;
+  }
+
+  let monto = recuperarFloat("montoCredito");
+  let plazo = recuperarInt("plazoCredito");
+
+  if(isNaN(monto) || monto <= 0){
+    mostrarTexto("resultadoCredito", "Ingrese un monto válido");
+    return;
+  }
+
+  if(isNaN(plazo) || plazo <= 0){
+    mostrarTexto("resultadoCredito", "Ingrese un plazo válido");
+    return;
+  }
+
+
+  let disponible = calcularDisponible(clienteCredito.ingresos, clienteCredito.egresos);
+  let capacidadPago = calcularCapacidadPago(disponible);
+
+  let interes = calcularInteresSimple(monto, tasaInteres, plazo);
+  let totalPagar = calcularTotalPagar(monto, interes);
+
+  let cuotaMensual = calcularCuotaMensual(totalPagar, plazo);
+
+  let estado = aprobarCredito(capacidadPago, cuotaMensual);
+
+  montoCalculado = monto;
+  plazoCalculado = plazo;
+  cuotaCalculada = cuotaMensual;
+
+  let resultado = `
+    <div class="${estado === 'APROBADO' ? 'aprobado' : 'rechazado'}">
+      <p><strong>Capacidad de pago:</strong> ${capacidadPago.toFixed(2)}</p>
+      <p><strong>Total a pagar:</strong> ${totalPagar.toFixed(2)}</p>
+      <p><strong>Cuota mensual:</strong> ${cuotaMensual.toFixed(2)}</p>
+      <p><strong>Resultado:</strong> ${estado}</p>
+    </div>
+  `;
+
+let resultadoDiv = document.getElementById("resultadoCredito");
+
+resultadoDiv.innerHTML = `
+  <p><strong>Capacidad de pago:</strong> ${capacidadPago.toFixed(2)}</p>
+  <p><strong>Total a pagar:</strong> ${totalPagar.toFixed(2)}</p>
+  <p><strong>Cuota mensual:</strong> ${cuotaMensual.toFixed(2)}</p>
+  <p><strong>Resultado:</strong> ${estado}</p>
+`;
+
+
+if(estado === "APROBADO"){
+  resultadoDiv.className = "aprobado";
+} else {
+  resultadoDiv.className = "rechazado";
+}
+
+  creditoAprobado = (estado === "APROBADO");
+  document.getElementById("btnSolicitarCredito").disabled = !creditoAprobado;
+}
+function solicitarCredito(){
+
+  if(!creditoAprobado){
+    mostrarTexto("resultadoCredito", "El crédito no está aprobado");
+    return;
+  }
+  let credito = {
+    cedula: clienteCredito.cedula,
+    monto: montoCalculado,
+    plazo: plazoCalculado,
+    cuota: cuotaCalculada
+  }
+  creditos.push(credito);
+  mostrarTexto("resultadoCredito", "Crédito registrado correctamente");
+ document.getElementById("btnSolicitarCredito").disabled = true;
 }

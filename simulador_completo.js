@@ -8,6 +8,7 @@
   let montoCalculado = 0;
   let plazoCalculado = 0;
   let creditoAprobado = false;
+  let plazoIngresado = 0;
 
  function ocultarSecciones(){
   let secciones = document.querySelectorAll("section");
@@ -84,6 +85,54 @@ function pintarClientes(){
 
   document.getElementById("tablaClientes").innerHTML = contenido;
 }
+
+function pintarCreditos(listaCreditos){
+
+  let contenido = "";
+
+  for(let i = 0; i < listaCreditos.length; i++){
+
+    let credito = listaCreditos[i];
+
+    contenido += "<tr>";
+
+    contenido += "<td>" + credito.cedula + "</td>";
+    contenido += "<td>" + credito.nombre + "</td>";
+    contenido += "<td>" + credito.apellido + "</td>";
+    contenido += "<td>" + credito.monto + "</td>";
+    contenido += "<td>" + credito.tasa + "%</td>";
+    contenido += "<td>" + credito.plazo + "</td>";
+    contenido += "<td>" + credito.cuota.toFixed(2) + "</td>";
+
+    contenido += "</tr>";
+  }
+
+  document.getElementById("tablaCreditos").innerHTML = contenido;
+}
+function buscarCreditos(cedula){
+
+  let creditosCliente = [];
+
+  for(let i = 0; i < creditos.length; i++){
+
+    let credito = creditos[i];
+
+    if(credito.cedula == cedula){
+      creditosCliente.push(credito);
+    }
+  }
+
+  return creditosCliente;
+}
+function buscarCreditosCliente(){
+
+  let cedula = recuperarTexto("buscarCedulaCredito");
+
+  let listaCreditos = buscarCreditos(cedula);
+
+  pintarCreditos(listaCreditos);
+}
+
 function buscarCliente(cedula) {
 
     let elementoCliente;
@@ -150,6 +199,7 @@ function buscarClienteCredito(){
     clienteCredito = null;
   } else {
     clienteCredito = cliente;
+    clienteSeleccionado = cliente;
 
     let info = `
   <h3>Datos del Cliente</h3>
@@ -173,6 +223,7 @@ function calcularCredito(){
 
   let monto = recuperarFloat("montoCredito");
   let plazo = recuperarInt("plazoCredito");
+  plazoIngresado = plazo;
 
   if(isNaN(monto) || monto <= 0){
     mostrarTexto("resultadoCredito", "Ingrese un monto válido");
@@ -225,7 +276,7 @@ if(estado === "APROBADO"){
 }
 
   creditoAprobado = (estado === "APROBADO");
-  document.getElementById("btnSolicitarCredito").disabled = !creditoAprobado;
+  document.getElementById("btnAsignarCredito").disabled = !creditoAprobado;
 }
 function solicitarCredito(){
 
@@ -241,5 +292,29 @@ function solicitarCredito(){
   }
   creditos.push(credito);
   mostrarTexto("resultadoCredito", "Crédito registrado correctamente");
- document.getElementById("btnSolicitarCredito").disabled = true;
+ document.getElementById("btnAsignarCredito").disabled = true;
+}
+function asignarCredito(){
+
+  if(!creditoAprobado){
+    mostrarTexto("resultadoCredito", "El crédito no está aprobado");
+    return;
+  }
+
+  
+  let credito = {
+    cedula: clienteSeleccionado.cedula,
+    nombre: clienteSeleccionado.nombre,
+    apellido: clienteSeleccionado.apellido,
+    monto: montoCalculado,
+    tasa: tasaInteres,
+    plazo: plazoIngresado,
+    cuota: cuotaCalculada
+  };
+
+  creditos.push(credito);
+
+  mostrarTexto("resultadoCredito", "Crédito asignado correctamente");
+
+  document.getElementById("btnAsignarCredito").disabled = true;
 }

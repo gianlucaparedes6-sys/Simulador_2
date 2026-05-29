@@ -1,6 +1,38 @@
 
   let clientes = [];
-  let creditos = [];
+  let creditos = [
+
+  {
+  cedula: "1723456789",
+  nombre: "Juan",
+  apellido: "Perez",
+  monto: 3000,
+  tasa: 15,
+  plazo: 12,
+  cuota: 287.50
+  },
+
+  {
+  cedula: "1711111111",
+  nombre: "Maria",
+  apellido: "Lopez",
+  monto: 7000,
+  tasa: 15,
+  plazo: 24,
+  cuota: 340.80
+  },
+
+  {
+  cedula: "1722222222",
+  nombre: "Carlos",
+  apellido: "Mendoza",
+  monto: 9000,
+  tasa: 15,
+  plazo: 36,
+  cuota: 312.40
+  }
+
+];
 
   let tasaInteres = 15;
   let clienteSeleccionado = null;
@@ -40,6 +72,8 @@ function guardarCliente(){
   let apellido = recuperarTexto("txtapellido");
   let ingresos = recuperarFloat("txtingresos");
   let egresos = recuperarFloat("txtegresos");
+  let telefono = recuperarFloat("txttelefono");
+  let correo = recuperarTexto("txtcorreo");
 
   if(clienteSeleccionado == null){
     let cliente = {
@@ -47,7 +81,9 @@ function guardarCliente(){
       nombre: nombre,
       apellido: apellido,
       ingresos: ingresos,
-      egresos: egresos
+      egresos: egresos,
+      telefono: telefono,
+      correo: correo
     };
 
     clientes.push(cliente);
@@ -57,6 +93,8 @@ function guardarCliente(){
     clienteSeleccionado.apellido = apellido;
     clienteSeleccionado.ingresos = ingresos;
     clienteSeleccionado.egresos = egresos;
+    clienteSeleccionado.telefono = telefono;
+    clienteSeleccionado.correo = correo;
   }
 
   pintarClientes();
@@ -74,6 +112,8 @@ function pintarClientes(){
     contenido += "<td>" + cliente.apellido + "</td>";
     contenido += "<td>" + cliente.ingresos + "</td>";
     contenido += "<td>" + cliente.egresos + "</td>";
+    contenido += "<td>" + cliente.telefono + "</td>";
+    contenido += "<td>" + cliente.correo + "</td>";
 
     contenido += "<td>";
     contenido += '<button onclick="seleccionarCliente(\'' + cliente.cedula + '\')">Actualizar</button>';
@@ -224,6 +264,15 @@ function calcularCredito(){
   let monto = recuperarFloat("montoCredito");
   let plazo = recuperarInt("plazoCredito");
   plazoIngresado = plazo;
+  let montoMaximo = recuperarFloat("montoMaximo");
+
+  if(monto > montoMaximo){
+  mostrarTexto("resultadoCredito", "El monto supera el máximo permitido");
+
+  mostrarTextoEnCaja("montoCredito", "");
+
+  return;
+}
 
   if(isNaN(monto) || monto <= 0){
     mostrarTexto("resultadoCredito", "Ingrese un monto válido");
@@ -317,4 +366,32 @@ function asignarCredito(){
   mostrarTexto("resultadoCredito", "Crédito asignado correctamente");
 
   document.getElementById("btnAsignarCredito").disabled = true;
+}
+function mostrarCreditosVIP(){
+
+  mostrarSeccion("vip");
+
+  let contenido = "";
+
+  for(let i = 0; i < creditos.length; i++){
+
+    let credito = creditos[i];
+
+    if(credito.monto > 5000){
+
+      contenido += "<tr>";
+
+      contenido += "<td>" + credito.cedula + "</td>";
+      contenido += "<td>" + credito.nombre + "</td>";
+      contenido += "<td>" + credito.apellido + "</td>";
+      contenido += "<td>" + credito.monto + "</td>";
+      contenido += "<td>" + credito.tasa + "%</td>";
+      contenido += "<td>" + credito.plazo + "</td>";
+      contenido += "<td>" + credito.cuota.toFixed(2) + "</td>";
+
+      contenido += "</tr>";
+    }
+  }
+
+  document.getElementById("tablaVIP").innerHTML = contenido;
 }
